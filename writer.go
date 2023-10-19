@@ -29,7 +29,7 @@ func (w *FnAvroWriter) Append(data interface{}) error {
 	return w.encoder.Encode(data)
 }
 
-func (w *FnAvroWriter) WriteRecord(source, target any) error {
+func (w *FnAvroWriter) MapAndAppend(source, target any) error {
 	jsonStr, err := json.Marshal(source)
 	if err != nil {
 		return err
@@ -37,8 +37,5 @@ func (w *FnAvroWriter) WriteRecord(source, target any) error {
 	if err := json.Unmarshal(jsonStr, &target); err != nil {
 		return err
 	}
-	if err := w.Append(target); err != nil {
-		return fmt.Errorf("avro append data error: %s", err.Error())
-	}
-	return nil
+	return w.Append(target)
 }

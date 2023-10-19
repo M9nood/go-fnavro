@@ -34,13 +34,6 @@ func WithGoogleStorageClient(client *storage.Client) FnAvroOption {
 	}
 }
 
-func WithFileStorageClient(client *storage.Client) FnAvroOption {
-	return func(ac *FnAvroClient) {
-		ac.storageType = FileStorageType
-		ac.storageClient = client
-	}
-}
-
 func NewFnAvroClient(ctx context.Context, opts ...FnAvroOption) (*FnAvroClient, error) {
 	client := &FnAvroClient{ctx: ctx}
 	for _, opt := range opts {
