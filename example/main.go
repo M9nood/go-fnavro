@@ -30,7 +30,7 @@ type AvroNav struct {
 }
 
 func main() {
-	os.Setenv("FNAVRO_EXPORT_BUCKET", "gs://XXXX")
+	os.Setenv("FNAVRO_EXPORT_BUCKET", "gs://scontent-qa.finnomena.com")
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "./service-account.json")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -51,7 +51,44 @@ func main() {
 	}
 
 	now := time.Now()
-	sampleRecords := []Nav{
+
+	// append
+	sampleValue, _ := new(big.Rat).SetString("19")
+	sampleAmout, _ := new(big.Rat).SetString("140999")
+
+	sampleRecords1 := []AvroNav{
+		{
+			MstarId: "F000000010",
+			NavDate: now,
+			Value:   sampleValue,
+			Amount:  sampleAmout,
+		},
+		{
+			MstarId: "F000000011",
+			NavDate: now,
+			Value:   sampleValue,
+			Amount:  sampleAmout,
+		},
+	}
+	distFileName1 := fmt.Sprintf("%s_%s_000000", entityName, now.Format("2006-01-02"))
+	outputDir1 := fmt.Sprintf("%s/%s/%s/%s", bucket, namespace, entityName, now.Format("2006/01/02"))
+	avroWriter1, _ := fnavroClient.NewAvroWriter(schema, outputDir1, distFileName1, 1)
+	for i := 0; i < len(sampleRecords1); i++ {
+		avro := AvroNav{}
+		if err := avroWriter1.MapAndAppend(sampleRecords1[i], &avro); err != nil {
+			fmt.Printf("avro append data error: %s", err.Error())
+			return
+		}
+	}
+
+	if err := avroWriter1.Close(); err != nil {
+		log.Panicf("Avro close process error: %s\n", err.Error())
+		return
+	}
+
+	// Map to other struct and append
+
+	sampleRecords2 := []Nav{
 		{
 			MstarId: "F000000010",
 			NavDate: primitive.NewDateTimeFromTime(now),
@@ -66,17 +103,18 @@ func main() {
 		},
 	}
 
-	distFileName := fmt.Sprintf("%s_%s_000000", entityName, now.Format("2006-01-02"))
-	outputDir := fmt.Sprintf("%s/%s/%s/%s", bucket, namespace, entityName, now.Format("2006/01/02"))
-	avroWriter, _ := fnavroClient.NewAvroWriter(schema, outputDir, distFileName, 1)
-	for i := 0; i < len(sampleRecords); i++ {
+	distFileName2 := fmt.Sprintf("map%s_%s_000000", entityName, now.Format("2006-01-02"))
+	outputDir2 := fmt.Sprintf("%s/%s/%s/%s", bucket, namespace, entityName, now.Format("2006/01/02"))
+	avroWriter2, _ := fnavroClient.NewAvroWriter(schema, outputDir2, distFileName2, 1)
+	for i := 0; i < len(sampleRecords2); i++ {
 		avro := AvroNav{}
-		if err := avroWriter.MapAndAppend(sampleRecords[i], &avro); err != nil {
+		if err := avroWriter2.MapAndAppend(sampleRecords2[i], &avro); err != nil {
 			fmt.Printf("avro append data error: %s", err.Error())
 			return
 		}
 	}
-	if err := avroWriter.Close(); err != nil {
+
+	if err := avroWriter2.Close(); err != nil {
 		log.Panicf("Avro close process error: %s\n", err.Error())
 		return
 	}
