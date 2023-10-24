@@ -135,23 +135,15 @@ func main() {
 			Amount:  decimal.NewFromFloat(12040.4),
 		},
 	}
-
-	distFileName := fmt.Sprintf("%s_%s_000000", entityName, now.Format("2006-01-02"))
 	...
 
 	for i := 0; i < len(sampleRecords); i++ {
 		avro := AvroNav{}
-		if err := avroWriter2.MapAndAppend(sampleRecords[i], &avro); err != nil {
+		if err := avroWriter.MapAndAppend(sampleRecords[i], &avro); err != nil {
 			fmt.Printf("avro append data error: %s", err.Error())
 			return
 		}
 	}
-
-	if err := avroWriter.Close(); err != nil {
-		log.Panicf("Avro close process error: %s\n", err.Error())
-		return
-	}
-
 }
 
 ```
